@@ -101,7 +101,7 @@ var executionTransitions = map[ExecutionStatus]map[ExecutionStatus]bool{
 	ExecutionPending:    {ExecutionRunning: true, ExecutionCanceled: true, ExecutionTerminated: true},
 	ExecutionRunning:    {ExecutionPaused: true, ExecutionWaiting: true, ExecutionSucceeded: true, ExecutionFailed: true, ExecutionCanceled: true, ExecutionTerminated: true},
 	ExecutionPaused:     {ExecutionRunning: true, ExecutionCanceled: true, ExecutionTerminated: true},
-	ExecutionWaiting:    {ExecutionCanceled: true, ExecutionTerminated: true},
+	ExecutionWaiting:    {ExecutionRunning: true, ExecutionCanceled: true, ExecutionTerminated: true},
 	ExecutionSucceeded:  {},
 	ExecutionFailed:     {ExecutionRunning: true, ExecutionTerminated: true},
 	ExecutionCanceled:   {},
@@ -113,7 +113,7 @@ var nodeTransitions = map[NodeStatus]map[NodeStatus]bool{
 	NodeScheduled:    {NodeRunning: true, NodeCanceled: true, NodeSkipped: true},
 	NodeRunning:      {NodeSucceeded: true, NodeFailed: true, NodeWaiting: true, NodeCanceled: true, NodeCompensating: true},
 	NodeFailed:       {NodeScheduled: true, NodeSucceeded: true, NodeCompensating: true, NodeCanceled: true},
-	NodeWaiting:      {NodeCanceled: true},
+	NodeWaiting:      {NodeScheduled: true, NodeCanceled: true},
 	NodeCompensating: {NodeCompensated: true, NodeFailed: true},
 	NodeCompensated:  {},
 	NodeSucceeded:    {NodeCompensating: true},
@@ -137,7 +137,7 @@ func CanTransitionNode(from, to NodeStatus) bool {
 
 func TerminalStatus(status ExecutionStatus) bool {
 	switch status {
-	case ExecutionSucceeded, ExecutionFailed, ExecutionCanceled:
+	case ExecutionSucceeded, ExecutionFailed, ExecutionCanceled, ExecutionTerminated:
 		return true
 	default:
 		return false
