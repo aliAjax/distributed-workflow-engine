@@ -39,7 +39,7 @@ func (c *RedisChecker) Check(ctx context.Context) error {
 }
 
 func withCheckTimeout(ctx context.Context, check func(context.Context) error) error {
-	child, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	child, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	return check(child)
 }

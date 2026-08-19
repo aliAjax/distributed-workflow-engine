@@ -23,4 +23,10 @@ type HealthReport struct {
 	Now    time.Time    `json:"now"`
 }
 
-func (r HealthReport) WithCheck(Check) HealthReport { return r }
+func (r HealthReport) WithCheck(check Check) HealthReport {
+	r.Checks = append(r.Checks, check)
+	if check.Status == HealthDown {
+		r.Status = HealthDown
+	}
+	return r
+}
