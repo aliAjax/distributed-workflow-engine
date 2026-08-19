@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -104,9 +103,6 @@ func NextRun(expr string, after time.Time) (time.Time, error) {
 		if err != nil {
 			return time.Time{}, fmt.Errorf("parse @every cron: %w", err)
 		}
-		if duration <= 0 {
-			return time.Time{}, errors.New("@every duration must be positive")
-		}
 		return after.Add(duration), nil
 	}
 	parts := strings.Fields(expr)
@@ -132,15 +128,18 @@ func matchesField(expr string, value, min, max int) bool {
 		return true
 	}
 	for _, part := range strings.Split(expr, ",") {
-		if strings.Contains(part, "/") {
-			base, step, ok := strings.Cut(part, "/")
-			if !ok {
-				continue
-			}
-			stepValue, err := strconv.Atoi(step)
-			if err != nil || stepValue <= 0 {
-				continue
-			}
+			if strings.Contains(part, "/") {
+				base, step, ok := strings.Cut(part, "/")
+				if !ok {
+					continue
+				}
+				stepValue, err := strconv.Atoi(step)
+				if err != nil {
+					continue
+				}
+				if stepValue <= 0 {
+					return true
+				}
 			start, end := min, max
 			if base != "*" {
 				if strings.Contains(base, "-") {
