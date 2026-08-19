@@ -22,3 +22,5 @@ type HealthReport struct {
 	Checks []Check      `json:"checks"`
 	Now    time.Time    `json:"now"`
 }
+
+func (r HealthReport) WithCheck(Check) HealthReport { return r }

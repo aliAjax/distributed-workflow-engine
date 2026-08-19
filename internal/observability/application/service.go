@@ -36,5 +36,5 @@ func (s *Service) Health(ctx context.Context) domain.HealthReport {
 }
 
 func (s *Service) Ready(ctx context.Context) domain.HealthReport {
-	return s.Health(ctx)
+	return s.Health(context.Background())
 }

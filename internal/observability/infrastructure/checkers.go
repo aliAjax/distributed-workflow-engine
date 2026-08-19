@@ -19,9 +19,7 @@ func NewPostgresChecker(db *sql.DB) *PostgresChecker {
 func (c *PostgresChecker) Name() string { return "postgres" }
 
 func (c *PostgresChecker) Check(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
-	defer cancel()
-	return c.db.PingContext(ctx)
+	return withCheckTimeout(ctx, c.db.PingContext)
 }
 
 type RedisChecker struct {
@@ -35,7 +33,13 @@ func NewRedisChecker(client *redis.Client) *RedisChecker {
 func (c *RedisChecker) Name() string { return "redis" }
 
 func (c *RedisChecker) Check(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	return withCheckTimeout(ctx, func(ctx context.Context) error {
+		return c.client.Ping(ctx).Err()
+	})
+}
+
+func withCheckTimeout(ctx context.Context, check func(context.Context) error) error {
+	child, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	return c.client.Ping(ctx).Err()
+	return check(child)
 }
