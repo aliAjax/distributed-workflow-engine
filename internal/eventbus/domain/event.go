@@ -25,22 +25,29 @@ type ExternalSignal struct {
 	Payload     map[string]any `json:"payload,omitempty"`
 }
 
+var (
+	ErrTenantRequired         = errors.New("event tenant id is required")
+	ErrEventTypeRequired      = errors.New("event type is required")
+	ErrExternalTenantRequired = errors.New("external signal tenant id is required")
+	ErrExternalEventRequired  = errors.New("external signal event is required")
+)
+
 func (e Event) Validate() error {
 	if e.TenantID == "" {
-		return errors.New("event tenant id is required")
+		return ErrTenantRequired
 	}
 	if strings.TrimSpace(e.Type) == "" {
-		return errors.New("event type is required")
+		return ErrEventTypeRequired
 	}
 	return nil
 }
 
 func (s ExternalSignal) Validate() error {
 	if s.TenantID == "" {
-		return errors.New("external signal tenant id is required")
+		return ErrExternalTenantRequired
 	}
 	if strings.TrimSpace(s.Event) == "" {
-		return errors.New("external signal event is required")
+		return ErrExternalEventRequired
 	}
 	return nil
 }
