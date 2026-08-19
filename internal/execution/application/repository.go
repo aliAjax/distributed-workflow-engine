@@ -98,6 +98,9 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (domain.Executi
 			return existing, nil
 		}
 	}
+	if err := domain.ValidateExecutionInput(input.Input); err != nil {
+		return domain.Execution{}, err
+	}
 	now := time.Now().UTC()
 	execution := domain.Execution{
 		ID:             uuid.NewString(),
@@ -107,7 +110,7 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (domain.Executi
 		Version:        input.Version,
 		Status:         domain.ExecutionPending,
 		Input:          input.Input,
-		Context:        nil,
+		Context:        map[string]any{},
 		TriggerSource:  input.Source,
 		TriggerRef:     input.TriggerRef,
 		Priority:       input.Priority,
@@ -163,7 +166,14 @@ func (s *Service) Resume(ctx context.Context, tenantID, id string) error {
 }
 
 func (s *Service) Cancel(ctx context.Context, tenantID, id string) error {
-	return s.repo.TransitionExecution(ctx, id, domain.ExecutionRunning, domain.ExecutionCanceled)
+	execution, err := s.repo.GetExecution(ctx, tenantID, id)
+	if err != nil {
+		return err
+	}
+	if domain.TerminalStatus(execution.Status) {
+		return fmt.Errorf("execution %s is already terminal", id)
+	}
+	return s.transition(ctx, tenantID, id, execution.Status, domain.ExecutionCanceled)
 }
 
 func (s *Service) Terminate(ctx context.Context, tenantID, id string) error {
