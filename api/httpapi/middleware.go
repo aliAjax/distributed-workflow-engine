@@ -19,6 +19,7 @@ type statusRecorder struct {
 }
 
 func (r *statusRecorder) WriteHeader(status int) {
+	r.status = status
 	r.ResponseWriter.WriteHeader(status)
 }
 
@@ -44,11 +45,11 @@ func (s *Server) withRecovery(next http.Handler) http.Handler {
 
 func (s *Server) withTimeout(timeout time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctx, cancel := context.WithTimeout(context.Background(), timeout)
-				defer cancel()
-				next.ServeHTTP(w, r.WithContext(ctx))
-			})
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx, cancel := context.WithTimeout(r.Context(), timeout)
+			defer cancel()
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
 }
 

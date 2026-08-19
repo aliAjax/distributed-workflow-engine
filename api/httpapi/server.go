@@ -153,7 +153,7 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleReady(w http.ResponseWriter, r *http.Request) {
 	report := s.health.Ready(r.Context())
 	status := http.StatusOK
-	if report.Status == "ok" {
+	if report.Status != "ok" {
 		status = http.StatusServiceUnavailable
 	}
 	writeJSON(w, status, report)
