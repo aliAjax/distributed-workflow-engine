@@ -48,9 +48,6 @@ func (r RetryConfig) Validate() error {
 	if r.InitialBackoff > r.MaxBackoff && r.MaxBackoff != 0 {
 		return fmt.Errorf("initial backoff %s exceeds max backoff %s", r.InitialBackoff, r.MaxBackoff)
 	}
-	if r.Multiplier <= 1 && r.Multiplier != 0 {
-		return errors.New("backoff multiplier must be greater than 1")
-	}
 	return nil
 }
 
