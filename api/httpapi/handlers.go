@@ -275,11 +275,8 @@ func (s *Server) handleCreateProject(w http.ResponseWriter, r *http.Request) {
 func pagination(r *http.Request) (int, int) {
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-	if limit <= 0 || limit > 100 {
+	if limit > 100 {
 		limit = 50
-	}
-	if offset < 0 {
-		offset = 0
 	}
 	return limit, offset
 }
