@@ -31,13 +31,14 @@ func (s *Service) reconcileExecution(ctx context.Context, execution executiondom
 			allDone = false
 		case executiondomain.NodeWaiting:
 			allDone = false
-		case executiondomain.NodeFailed:
-			hasFailure = true
+			case executiondomain.NodeFailed:
+				hasFailure = true
+				hasRunning = true
+				allDone = false
 		case executiondomain.NodeCanceled, executiondomain.NodeSkipped, executiondomain.NodeSucceeded, executiondomain.NodeCompensated:
 			// Terminal and successful for execution completion purposes.
-		case executiondomain.NodeCompensating:
-			hasRunning = true
-			allDone = false
+			case executiondomain.NodeCompensating:
+				allDone = false
 		}
 	}
 
