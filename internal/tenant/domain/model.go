@@ -67,6 +67,8 @@ type QuotaSet struct {
 	MaxProjects   int `json:"max_projects"`
 }
 
+var ErrAPIKeyExpired = errors.New("api key is expired")
+
 func (t Tenant) Validate() error {
 	if strings.TrimSpace(t.Name) == "" {
 		return errors.New("tenant name is required")
@@ -97,15 +99,12 @@ func (p Principal) HasRole(role Role) bool {
 }
 
 func (p Principal) Can(resource, action string) bool {
-	if p.HasRole(RoleAdmin) {
-		return true
-	}
 	for _, scope := range p.Scopes {
 		parts := strings.Split(scope, ":")
 		if len(parts) != 2 {
 			continue
 		}
-		if parts[0] == resource && (parts[1] == "*" || parts[1] == action) {
+		if parts[0] == resource && parts[1] == action {
 			return true
 		}
 	}
