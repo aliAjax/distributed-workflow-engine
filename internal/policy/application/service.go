@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/acme/distributed-workflow-engine/internal/policy/domain"
@@ -38,13 +39,11 @@ func (s *Service) AcquireTenantSlot(ctx context.Context, tenantID string, limit 
 	if !ok {
 		return nil, fmt.Errorf("tenant concurrency quota exceeded: used=%d limit=%d", used, limit)
 	}
-	released := false
+	var once sync.Once
 	return func() {
-		if released {
-			return
-		}
-		released = true
-		_ = s.store.Release(ctx, key)
+		once.Do(func() {
+			_ = s.store.Release(ctx, key)
+		})
 	}, nil
 }
 
@@ -60,13 +59,11 @@ func (s *Service) AcquireWorkflowSlot(ctx context.Context, tenantID, workflowID 
 	if !ok {
 		return nil, fmt.Errorf("workflow concurrency quota exceeded: used=%d limit=%d", used, limit)
 	}
-	released := false
+	var once sync.Once
 	return func() {
-		if released {
-			return
-		}
-		released = true
-		_ = s.store.Release(ctx, key)
+		once.Do(func() {
+			_ = s.store.Release(ctx, key)
+		})
 	}, nil
 }
 

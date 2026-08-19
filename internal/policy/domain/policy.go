@@ -48,11 +48,14 @@ func (r RetryConfig) Validate() error {
 	if r.InitialBackoff > r.MaxBackoff && r.MaxBackoff != 0 {
 		return fmt.Errorf("initial backoff %s exceeds max backoff %s", r.InitialBackoff, r.MaxBackoff)
 	}
+	if r.Multiplier <= 1 {
+		return errors.New("backoff multiplier must be greater than 1")
+	}
 	return nil
 }
 
 func (b BackoffConfig) ForAttempt(attempt int) time.Duration {
-	if attempt <= 1 {
+	if attempt <= 1 || b.Factor <= 0 {
 		return b.Initial
 	}
 	delay := b.Initial
