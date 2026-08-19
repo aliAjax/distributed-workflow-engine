@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -36,6 +37,9 @@ func NewService(repo Repository, executor Executor) *Service {
 }
 
 func (s *Service) Register(ctx context.Context, trigger domain.Trigger) (domain.Trigger, error) {
+	if err := trigger.Validate(); err != nil {
+		return domain.Trigger{}, err
+	}
 	if trigger.ID == "" {
 		trigger.ID = uuid.NewString()
 	}
@@ -70,6 +74,9 @@ func (s *Service) Tick(ctx context.Context, limit int) (int, error) {
 	}
 	ran := 0
 	for _, trigger := range triggers {
+		if err := ctx.Err(); err != nil {
+			return ran, err
+		}
 		if !trigger.Enabled {
 			continue
 		}
@@ -103,6 +110,9 @@ func NextRun(expr string, after time.Time) (time.Time, error) {
 		if err != nil {
 			return time.Time{}, fmt.Errorf("parse @every cron: %w", err)
 		}
+		if duration <= 0 {
+			return time.Time{}, errors.New("@every duration must be positive")
+		}
 		return after.Add(duration), nil
 	}
 	parts := strings.Fields(expr)
@@ -128,18 +138,15 @@ func matchesField(expr string, value, min, max int) bool {
 		return true
 	}
 	for _, part := range strings.Split(expr, ",") {
-			if strings.Contains(part, "/") {
-				base, step, ok := strings.Cut(part, "/")
-				if !ok {
-					continue
-				}
-				stepValue, err := strconv.Atoi(step)
-				if err != nil {
-					continue
-				}
-				if stepValue <= 0 {
-					return true
-				}
+		if strings.Contains(part, "/") {
+			base, step, ok := strings.Cut(part, "/")
+			if !ok {
+				continue
+			}
+			stepValue, err := strconv.Atoi(step)
+			if err != nil || stepValue <= 0 {
+				continue
+			}
 			start, end := min, max
 			if base != "*" {
 				if strings.Contains(base, "-") {
