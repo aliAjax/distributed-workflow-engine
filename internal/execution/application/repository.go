@@ -107,7 +107,7 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (domain.Executi
 		Version:        input.Version,
 		Status:         domain.ExecutionPending,
 		Input:          input.Input,
-		Context:        map[string]any{},
+		Context:        nil,
 		TriggerSource:  input.Source,
 		TriggerRef:     input.TriggerRef,
 		Priority:       input.Priority,
@@ -163,14 +163,7 @@ func (s *Service) Resume(ctx context.Context, tenantID, id string) error {
 }
 
 func (s *Service) Cancel(ctx context.Context, tenantID, id string) error {
-	execution, err := s.repo.GetExecution(ctx, tenantID, id)
-	if err != nil {
-		return err
-	}
-	if domain.TerminalStatus(execution.Status) {
-		return fmt.Errorf("execution %s is already terminal", id)
-	}
-	return s.repo.TransitionExecution(ctx, id, execution.Status, domain.ExecutionCanceled)
+	return s.repo.TransitionExecution(ctx, id, domain.ExecutionRunning, domain.ExecutionCanceled)
 }
 
 func (s *Service) Terminate(ctx context.Context, tenantID, id string) error {
