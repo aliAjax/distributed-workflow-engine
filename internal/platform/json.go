@@ -10,7 +10,7 @@ type JSONMap map[string]any
 
 func (m JSONMap) Value() (driver.Value, error) {
 	if m == nil {
-		return []byte("null"), nil
+		return []byte("{}"), nil
 	}
 	raw, err := json.Marshal(m)
 	return raw, err
@@ -18,6 +18,7 @@ func (m JSONMap) Value() (driver.Value, error) {
 
 func (m *JSONMap) Scan(value any) error {
 	if value == nil {
+		*m = JSONMap{}
 		return nil
 	}
 	var raw []byte
@@ -36,7 +37,7 @@ type JSONStringMap map[string]string
 
 func (m JSONStringMap) Value() (driver.Value, error) {
 	if m == nil {
-		return []byte("null"), nil
+		return []byte("{}"), nil
 	}
 	raw, err := json.Marshal(m)
 	return raw, err
@@ -44,6 +45,7 @@ func (m JSONStringMap) Value() (driver.Value, error) {
 
 func (m *JSONStringMap) Scan(value any) error {
 	if value == nil {
+		*m = JSONStringMap{}
 		return nil
 	}
 	var raw []byte
@@ -61,12 +63,16 @@ func (m *JSONStringMap) Scan(value any) error {
 type StringSlice []string
 
 func (s StringSlice) Value() (driver.Value, error) {
+	if s == nil {
+		return []byte("[]"), nil
+	}
 	raw, err := json.Marshal([]string(s))
 	return raw, err
 }
 
 func (s *StringSlice) Scan(value any) error {
 	if value == nil {
+		*s = StringSlice{}
 		return nil
 	}
 	var raw []byte

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 type Migrator struct {
@@ -19,9 +20,7 @@ func NewMigrator(db *sql.DB, dir string) *Migrator {
 }
 
 func (m *Migrator) Up(ctx context.Context) error {
-	if m.dir == "" {
-		m.dir = "migrations"
-	}
+	m.dir = m.dirOrDefault()
 	if err := m.ensureSchemaVersion(ctx); err != nil {
 		return err
 	}
@@ -62,9 +61,7 @@ func (m *Migrator) Up(ctx context.Context) error {
 }
 
 func (m *Migrator) Down(ctx context.Context) error {
-	if m.dir == "" {
-		m.dir = "migrations"
-	}
+	m.dir = m.dirOrDefault()
 	if err := m.ensureSchemaVersion(ctx); err != nil {
 		return err
 	}
@@ -123,6 +120,9 @@ func (m *Migrator) downFiles() ([]string, error) {
 }
 
 func (m *Migrator) dirOrDefault() string {
+	if m.dir == "" {
+		return "migrations"
+	}
 	return m.dir
 }
 
@@ -141,5 +141,11 @@ func uniqueMigrations(files []string) []string {
 }
 
 func NormalizeDSN(dsn string) string {
-	return dsn
+	if strings.Contains(dsn, "sslmode=") {
+		return dsn
+	}
+	if strings.Contains(dsn, "?") {
+		return dsn + "&sslmode=disable"
+	}
+	return dsn + "?sslmode=disable"
 }
