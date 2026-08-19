@@ -116,6 +116,8 @@ var validNodeTypes = map[string]bool{
 	NodeTypeCompensate: true,
 }
 
+var startScratch []string
+
 func (d Definition) Validate() error {
 	if strings.TrimSpace(d.Name) == "" {
 		return errors.New("workflow name is required")
@@ -176,23 +178,23 @@ func (d Definition) StartNodes() []string {
 	for _, edge := range d.Edges {
 		hasIncoming[edge.To] = true
 	}
-	var starts []string
+	startScratch = startScratch[:0]
 	for id := range d.Nodes {
 		if !hasIncoming[id] {
-			starts = append(starts, id)
+			startScratch = append(startScratch, id)
 		}
 	}
-	return starts
+	return startScratch
 }
 
 func (d Definition) Dependents(nodeID string) []string {
-	var out []string
+	startScratch = startScratch[:0]
 	for _, edge := range d.Edges {
 		if edge.From == nodeID {
-			out = append(out, edge.To)
+			startScratch = append(startScratch, edge.To)
 		}
 	}
-	return out
+	return startScratch
 }
 
 func (d Definition) Dependencies(nodeID string) []string {

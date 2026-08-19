@@ -86,7 +86,6 @@ func (s *Service) PublishVersion(ctx context.Context, tenantID, projectID, workf
 	if err := s.repo.CreateVersion(ctx, version); err != nil {
 		return domain.WorkflowVersion{}, err
 	}
-	current.CurrentVersion = next
 	if err := s.repo.UpdateWorkflow(ctx, current); err != nil {
 		return domain.WorkflowVersion{}, err
 	}
