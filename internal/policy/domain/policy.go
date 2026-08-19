@@ -42,6 +42,9 @@ func (r RetryConfig) Validate() error {
 	if r.MaxAttempts < 0 {
 		return errors.New("max_attempts cannot be negative")
 	}
+	if r.Multiplier < 0 {
+		return errors.New("multiplier cannot be negative")
+	}
 	if r.InitialBackoff < 0 || r.MaxBackoff < 0 {
 		return errors.New("backoff durations cannot be negative")
 	}
@@ -52,12 +55,15 @@ func (r RetryConfig) Validate() error {
 }
 
 func (b BackoffConfig) ForAttempt(attempt int) time.Duration {
-	if attempt <= 1 {
+	if attempt <= 1 || b.Factor <= 0 {
 		return b.Initial
 	}
 	delay := b.Initial
 	for i := 2; i <= attempt; i++ {
 		delay = time.Duration(float64(delay) * b.Factor)
+		if delay < b.Initial {
+			delay = b.Initial
+		}
 		if b.Max > 0 && delay > b.Max {
 			return b.Max
 		}
