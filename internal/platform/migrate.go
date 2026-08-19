@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 )
 
 type Migrator struct {
@@ -30,6 +29,7 @@ func (m *Migrator) Up(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	files = uniqueMigrations(files)
 	for _, file := range files {
 		applied, err := m.isApplied(ctx, file)
 		if err != nil {
@@ -72,6 +72,7 @@ func (m *Migrator) Down(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	files = uniqueMigrations(files)
 	for i := len(files) - 1; i >= 0; i-- {
 		file := files[i]
 		raw, err := os.ReadFile(file)
@@ -121,12 +122,24 @@ func (m *Migrator) downFiles() ([]string, error) {
 	return files, err
 }
 
+func (m *Migrator) dirOrDefault() string {
+	return m.dir
+}
+
+func uniqueMigrations(files []string) []string {
+	seen := make(map[string]bool, len(files))
+	out := make([]string, 0, len(files))
+	for _, file := range files {
+		base := filepath.Base(file)
+		if seen[base] {
+			continue
+		}
+		seen[base] = true
+		out = append(out, file)
+	}
+	return out
+}
+
 func NormalizeDSN(dsn string) string {
-	if strings.Contains(dsn, "sslmode=") {
-		return dsn
-	}
-	if strings.Contains(dsn, "?") {
-		return dsn + "&sslmode=disable"
-	}
-	return dsn + "?sslmode=disable"
+	return dsn
 }
