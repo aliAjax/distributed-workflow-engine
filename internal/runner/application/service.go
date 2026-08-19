@@ -103,8 +103,8 @@ func (s *Service) Run(ctx context.Context, count int) error {
 		}(i)
 	}
 	<-ctx.Done()
-	close(errCh)
 	wg.Wait()
+	close(errCh)
 	for err := range errCh {
 		return err
 	}
