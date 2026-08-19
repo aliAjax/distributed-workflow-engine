@@ -39,12 +39,12 @@ func (s *Service) Publish(ctx context.Context, event domain.Event) error {
 	}
 	if s.persister != nil {
 		if err := s.persister.AppendEvent(ctx, event); err != nil {
-			return fmt.Errorf("persist event: %w", err)
+			return fmt.Errorf("persist event: %v", err)
 		}
 	}
 	if s.publisher != nil {
 		if err := s.publisher.Publish(ctx, event); err != nil {
-			return fmt.Errorf("publish event: %w", err)
+			return fmt.Errorf("publish event: %v", err)
 		}
 	}
 	return nil
@@ -67,7 +67,7 @@ func (s *Service) PublishExternalSignal(ctx context.Context, signal domain.Exter
 	}
 	if s.resolver != nil {
 		if err := s.resolver.ResolveExternal(ctx, signal); err != nil {
-			return fmt.Errorf("resolve external signal: %w", err)
+			return fmt.Errorf("resolve external signal: %v", err)
 		}
 	}
 	return nil

@@ -37,5 +37,8 @@ func (p *ExecutionPersister) AppendEvent(ctx context.Context, event domain.Event
 	if executionEvent.ExecutionID == "" {
 		return fmt.Errorf("cannot persist event without subject id")
 	}
-	return p.repo.AppendEvent(ctx, executionEvent)
+	if err := p.repo.AppendEvent(ctx, executionEvent); err != nil {
+		return fmt.Errorf("append execution event: %v", err)
+	}
+	return nil
 }
