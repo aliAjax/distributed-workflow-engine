@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/acme/distributed-workflow-engine/internal/eventbus/domain"
 	executiondomain "github.com/acme/distributed-workflow-engine/internal/execution/domain"
 )
@@ -34,11 +36,14 @@ func (p *ExecutionPersister) AppendEvent(ctx context.Context, event domain.Event
 	if executionEvent.CreatedAt.IsZero() {
 		executionEvent.CreatedAt = time.Now().UTC()
 	}
+	if executionEvent.ID == "" {
+		executionEvent.ID = uuid.NewString()
+	}
 	if executionEvent.ExecutionID == "" {
 		return fmt.Errorf("cannot persist event without subject id")
 	}
 	if err := p.repo.AppendEvent(ctx, executionEvent); err != nil {
-		return fmt.Errorf("append execution event: %v", err)
+		return fmt.Errorf("append execution event: %w", err)
 	}
 	return nil
 }
