@@ -90,10 +90,10 @@ func (s *Service) Authenticate(ctx context.Context, apiKey string) (domain.Princ
 	}
 	key, err := s.repo.GetAPIKeyByHash(ctx, HashKey(apiKey))
 	if err != nil {
-		return domain.Principal{}, fmt.Errorf("authenticate api key: %v", err)
+		return domain.Principal{}, fmt.Errorf("authenticate api key: %w", err)
 	}
 	if key.ExpiresAt != nil && key.ExpiresAt.Before(now()) {
-		return domain.Principal{}, fmt.Errorf("api key %s is expired", key.Name)
+		return domain.Principal{}, domain.ErrAPIKeyExpired
 	}
 	if err := s.repo.UpdateAPIKeyLastUsed(ctx, key.ID); err != nil {
 		return domain.Principal{}, err

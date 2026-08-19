@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 )
@@ -99,16 +98,23 @@ func (p Principal) HasRole(role Role) bool {
 }
 
 func (p Principal) Can(resource, action string) bool {
+	if p.HasRole(RoleAdmin) {
+		return true
+	}
 	for _, scope := range p.Scopes {
-		parts := strings.Split(scope, ":")
-		if len(parts) != 2 {
-			continue
-		}
-		if parts[0] == resource && parts[1] == action {
+		if p.scopeMatches(scope, resource, action) {
 			return true
 		}
 	}
 	return false
+}
+
+func (p Principal) scopeMatches(scope, resource, action string) bool {
+	parts := strings.Split(scope, ":")
+	if len(parts) != 2 {
+		return false
+	}
+	return parts[0] == resource && (parts[1] == "*" || parts[1] == action)
 }
 
 func (k APIKey) Validate() error {
@@ -119,7 +125,7 @@ func (k APIKey) Validate() error {
 		return errors.New("api key tenant id is required")
 	}
 	if k.ExpiresAt != nil && k.ExpiresAt.Before(time.Now()) {
-		return fmt.Errorf("api key %s is already expired", k.Name)
+		return ErrAPIKeyExpired
 	}
 	return nil
 }
