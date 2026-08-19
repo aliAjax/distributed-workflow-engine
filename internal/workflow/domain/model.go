@@ -116,8 +116,6 @@ var validNodeTypes = map[string]bool{
 	NodeTypeCompensate: true,
 }
 
-var startScratch []string
-
 func (d Definition) Validate() error {
 	if strings.TrimSpace(d.Name) == "" {
 		return errors.New("workflow name is required")
@@ -157,6 +155,14 @@ func (d Definition) Validate() error {
 			return fmt.Errorf("edge %d cannot connect node %q to itself", i, edge.From)
 		}
 	}
+	seen := make(map[string]bool, len(d.Edges))
+	for i, edge := range d.Edges {
+		key := edge.From + "\x00" + edge.To
+		if seen[key] {
+			return fmt.Errorf("edge %d duplicates edge from %q to %q", i, edge.From, edge.To)
+		}
+		seen[key] = true
+	}
 	for _, trigger := range d.Triggers {
 		switch trigger.Type {
 		case "cron", "manual", "event":
@@ -178,23 +184,23 @@ func (d Definition) StartNodes() []string {
 	for _, edge := range d.Edges {
 		hasIncoming[edge.To] = true
 	}
-	startScratch = startScratch[:0]
+	var out []string
 	for id := range d.Nodes {
 		if !hasIncoming[id] {
-			startScratch = append(startScratch, id)
+			out = append(out, id)
 		}
 	}
-	return startScratch
+	return out
 }
 
 func (d Definition) Dependents(nodeID string) []string {
-	startScratch = startScratch[:0]
+	var out []string
 	for _, edge := range d.Edges {
 		if edge.From == nodeID {
-			startScratch = append(startScratch, edge.To)
+			out = append(out, edge.To)
 		}
 	}
-	return startScratch
+	return out
 }
 
 func (d Definition) Dependencies(nodeID string) []string {
