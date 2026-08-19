@@ -70,6 +70,9 @@ func (s *Service) Tick(ctx context.Context, limit int) (int, error) {
 	}
 	ran := 0
 	for _, trigger := range triggers {
+		if err := ctx.Err(); err != nil {
+			return ran, err
+		}
 		if !trigger.Enabled {
 			continue
 		}
@@ -102,6 +105,9 @@ func NextRun(expr string, after time.Time) (time.Time, error) {
 		duration, err := time.ParseDuration(strings.TrimSpace(strings.TrimPrefix(expr, "@every ")))
 		if err != nil {
 			return time.Time{}, fmt.Errorf("parse @every cron: %w", err)
+		}
+		if duration <= 0 {
+			return time.Time{}, fmt.Errorf("@every duration must be positive")
 		}
 		return after.Add(duration), nil
 	}
@@ -138,7 +144,7 @@ func matchesField(expr string, value, min, max int) bool {
 					continue
 				}
 				if stepValue <= 0 {
-					return true
+					continue
 				}
 			start, end := min, max
 			if base != "*" {

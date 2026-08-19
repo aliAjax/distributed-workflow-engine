@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"errors"
+	"strings"
 	"time"
 )
 
@@ -37,4 +39,26 @@ type TriggerRequest struct {
 	Input          map[string]any `json:"input,omitempty"`
 	IdempotencyKey string         `json:"idempotency_key,omitempty"`
 	Priority       int            `json:"priority"`
+}
+
+// Validate ensures the trigger has the fields required for its type.
+func (t Trigger) Validate() error {
+	if strings.TrimSpace(t.WorkflowID) == "" {
+		return errors.New("workflow id is required")
+	}
+	switch t.Type {
+	case TriggerCron:
+		if strings.TrimSpace(t.Cron) == "" {
+			return errors.New("cron trigger requires a cron expression")
+		}
+	case TriggerEvent:
+		if strings.TrimSpace(t.Event) == "" {
+			return errors.New("event trigger requires an event name")
+		}
+	case TriggerManual:
+		// no extra fields required
+	default:
+		return errors.New("unknown trigger type")
+	}
+	return nil
 }
