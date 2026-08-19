@@ -1,0 +1,43 @@
+environment: development
+
+log:
+  level: info
+  format: json
+
+http:
+  addr: ":8080"
+  read_timeout: 10s
+  write_timeout: 30s
+  shutdown_timeout: 15s
+
+grpc:
+  addr: ":9090"
+
+postgres:
+  dsn: "postgres://workflow:workflow@localhost:5432/workflow?sslmode=disable"
+  max_open_conns: 20
+  max_idle_conns: 5
+  conn_max_lifetime: 30m
+
+redis:
+  addr: "localhost:6379"
+  password: ""
+  db: 0
+  pool_size: 20
+
+auth:
+  bootstrap_token: "dev-secret-token"
+  token_ttl: 24h
+
+scheduler:
+  interval: 2s
+
+worker:
+  count: 2
+  poll_interval: 500ms
+  lease_duration: 30s
+  heartbeat_every: 5s
+  max_concurrent: 20
+
+migrations:
+  dir: "migrations"

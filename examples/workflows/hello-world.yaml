@@ -1,0 +1,26 @@
+name: hello-world
+description: A small workflow used to verify orchestration, retries, waits, and compensation.
+version: 1
+nodes:
+  start:
+    type: echo
+    name: Emit greeting
+    command: "hello from workflow"
+  wait_external:
+    type: wait_event
+    name: Wait for approval
+    command: "approval"
+    timeout: 60s
+    retry:
+      max_attempts: 1
+  success:
+    type: log
+    name: Finish after external signal
+    command: "workflow completed"
+edges:
+  - from: start
+    to: wait_external
+  - from: wait_external
+    to: success
+triggers:
+  - type: manual

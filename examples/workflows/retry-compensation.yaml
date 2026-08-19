@@ -1,0 +1,22 @@
+name: retry-compensation
+description: Demonstrates retries and a compensation node.
+version: 1
+nodes:
+  flaky:
+    type: fail
+    name: Always fails
+    command: "simulated failure"
+    retry:
+      max_attempts: 3
+      initial_backoff: 100ms
+      max_backoff: 1s
+      multiplier: 2.0
+  compensate_flaky:
+    type: compensate
+    name: Clean up flaky resources
+    compensate_for: flaky
+edges:
+  - from: flaky
+    to: compensate_flaky
+triggers:
+  - type: manual

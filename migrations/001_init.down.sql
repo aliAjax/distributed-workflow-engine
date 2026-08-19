@@ -1,0 +1,17 @@
+DROP TRIGGER IF EXISTS workflow_triggers_touch_updated_at ON workflow_triggers;
+DROP TRIGGER IF EXISTS node_executions_touch_updated_at ON node_executions;
+DROP TRIGGER IF EXISTS executions_touch_updated_at ON executions;
+DROP TRIGGER IF EXISTS workflows_touch_updated_at ON workflows;
+DROP TRIGGER IF EXISTS projects_touch_updated_at ON projects;
+DROP TRIGGER IF EXISTS tenants_touch_updated_at ON tenants;
+DROP FUNCTION IF EXISTS touch_updated_at();
+DROP TABLE IF EXISTS wait_events;
+DROP TABLE IF EXISTS workflow_triggers;
+DROP TABLE IF EXISTS execution_events;
+DROP TABLE IF EXISTS node_executions;
+DROP TABLE IF EXISTS executions;
+DROP TABLE IF EXISTS workflow_versions;
+DROP TABLE IF EXISTS workflows;
+DROP TABLE IF EXISTS api_keys;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS tenants;
