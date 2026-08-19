@@ -26,19 +26,19 @@ func (s *Service) reconcileExecution(ctx context.Context, execution executiondom
 	allDone := true
 	for _, node := range latest {
 		switch node.Status {
-		case executiondomain.NodeRunning, executiondomain.NodeScheduled, executiondomain.NodePending:
+		case executiondomain.NodeRunning, executiondomain.NodeScheduled, executiondomain.NodePending, executiondomain.NodeCompensating:
+			// Active or in-flight work keeps the execution running; compensating
+			// is still active cleanup, so it must not transition the execution.
 			hasRunning = true
 			allDone = false
 		case executiondomain.NodeWaiting:
 			allDone = false
-			case executiondomain.NodeFailed:
-				hasFailure = true
-				hasRunning = true
-				allDone = false
+		case executiondomain.NodeFailed:
+			// Failed is terminal for the node; it only flags the execution as
+			// failed once no other work remains in flight.
+			hasFailure = true
 		case executiondomain.NodeCanceled, executiondomain.NodeSkipped, executiondomain.NodeSucceeded, executiondomain.NodeCompensated:
 			// Terminal and successful for execution completion purposes.
-			case executiondomain.NodeCompensating:
-				allDone = false
 		}
 	}
 

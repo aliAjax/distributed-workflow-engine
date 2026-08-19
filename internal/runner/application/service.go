@@ -103,8 +103,11 @@ func (s *Service) Run(ctx context.Context, count int) error {
 		}(i)
 	}
 	<-ctx.Done()
-	close(errCh)
+	// Wait for workers to finish before closing errCh: a worker that observed
+	// ctx.Done() returns ctx.Err() and sends it here. Closing first would turn
+	// that send into a "send on closed channel" panic.
 	wg.Wait()
+	close(errCh)
 	for err := range errCh {
 		return err
 	}

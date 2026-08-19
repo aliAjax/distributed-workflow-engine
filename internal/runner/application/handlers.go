@@ -388,9 +388,14 @@ func evaluateCondition(expr string, input, executionContext map[string]any) (boo
 }
 
 func sleepContext(ctx context.Context, duration time.Duration) error {
-	_ = ctx
-	time.Sleep(duration)
-	return nil
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
 }
 
 func powFactor(base float64, exp int) float64 {

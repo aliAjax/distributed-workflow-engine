@@ -1,6 +1,6 @@
 {
   "mode": "service",
-  "start": "CGO_ENABLED=0 go build -o ./bin/engine ./cmd/engine && ./bin/engine -config configs/config.yaml",
+  "start": "CGO_ENABLED=0 go build -o /tmp/workflow-engine-smoke ./cmd/engine && /tmp/workflow-engine-smoke -config configs/config.yaml",
   "workdir": ".",
   "env": {
     "HTTP_ADDR": ":18080",
